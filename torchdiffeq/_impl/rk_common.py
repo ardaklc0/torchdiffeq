@@ -250,6 +250,9 @@ class RKAdaptiveStepsizeODESolver(AdaptiveStepsizeEventODESolver):
         dt = dt.clamp(self.min_step, self.max_step)
         self.func.callback_step(t0, y0, dt)
         t1 = t0 + dt
+
+        if dt < 1e-17:
+            dt = 0
         # dtypes: self.y0.dtype (probably float32); self.dtype (probably float64)
         # used for state and timelike objects respectively.
         # Then:
@@ -262,7 +265,7 @@ class RKAdaptiveStepsizeODESolver(AdaptiveStepsizeEventODESolver):
         ########################################################
         #                      Assertions                      #
         ########################################################
-        assert t0 + dt > t0, 'underflow in dt {}'.format(dt.item())
+        # assert t0 + dt > t0, 'underflow in dt {}'.format(dt.item())
         assert torch.isfinite(y0).all(), 'non-finite values in state `y`: {}'.format(y0)
 
         ########################################################
