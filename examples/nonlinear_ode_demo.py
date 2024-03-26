@@ -14,7 +14,7 @@ parser.add_argument('--method', type=str, choices=['dopri5', 'adams'], default='
 parser.add_argument('--data_size', type=int, default=1000)
 parser.add_argument('--batch_time', type=int, default=10)
 parser.add_argument('--batch_size', type=int, default=20)
-parser.add_argument('--niters', type=int, default=2000)
+parser.add_argument('--niters', type=int, default=3000)
 parser.add_argument('--test_freq', type=int, default=20)
 parser.add_argument('--viz', action='store_true')
 parser.add_argument('--gpu', type=int, default=0)
@@ -26,13 +26,15 @@ else:
     from torchdiffeq import odeint
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
-true_y0 = torch.tensor([1.]).to(device) # initial condition; t(0) = 0
-t = torch.linspace(0., 25., args.data_size).to(device) # time step t_0 to t_N for (--data_size) in our case 1000
+
+true_y0 = torch.tensor([0.]).to(device) # initial condition; t(0) = 0
+t = torch.linspace(0., 0.99, args.data_size).to(device) # time step t_0 to t_N for (--data_size) in our case 1000
 true_dy = torch.tensor([1.]).to(device) # y' = 1 * e^y 
 
 
 class Nonhomogenous(nn.Module):
     def forward(self, t, y):
+        print(y, torch.exp(y) * true_dy[0])
         return torch.exp(y) * true_dy[0]
 
 with torch.no_grad():
@@ -82,7 +84,7 @@ if __name__ == '__main__':
     for itr in range(1, args.niters + 1):
         optimizer.zero_grad()
         pred_y = odeint(func, batch_y0, batch_t).to(device)
-        loss = F.mse_loss(torch.abs(pred_y - batch_y))
+        loss = F.mse_loss(pred_y, batch_y)
         loss.backward()
         optimizer.step()
 

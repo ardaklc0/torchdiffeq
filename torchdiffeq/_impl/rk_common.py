@@ -265,7 +265,7 @@ class RKAdaptiveStepsizeODESolver(AdaptiveStepsizeEventODESolver):
         ########################################################
         #                      Assertions                      #
         ########################################################
-        # assert t0 + dt > t0, 'underflow in dt {}'.format(dt.item())
+        assert t0 + dt > t0, 'underflow in dt {}'.format(dt.item())
         assert torch.isfinite(y0).all(), 'non-finite values in state `y`: {}'.format(y0)
 
         ########################################################
