@@ -27,15 +27,15 @@ else:
 device = torch.device('cuda:' + str(args.gpu) if torch.cuda.is_available() else 'cpu')
 
 
-true_y0 = torch.tensor([0.]).to(device) # initial condition; t(0) = 0
-t = torch.linspace(0., 0.99, args.data_size).to(device) # time step t_0 to t_N for (--data_size) in our case 1000
+true_y0 = torch.tensor([2.]).to(device) # initial condition; t(0) = 0
+t = torch.linspace(1., 5.-1e-6, args.data_size).to(device) # time step t_0 to t_N for (--data_size) in our case 1000
 true_dy = torch.tensor([1.]).to(device) # y' = 1 * e^y 
 
 
 class Nonhomogenous(nn.Module):
     def forward(self, t, y):
-        print(y, torch.exp(y) * true_dy[0])
-        return torch.exp(y) * true_dy[0]
+        # print(y, torch.exp(y) * true_dy[0])
+        return (y / (2 * t)) + (t ** 2 / (2 * y))  * true_dy[0]
 
 with torch.no_grad():
     true_y = odeint(Nonhomogenous(), true_y0, t, method='dopri5')
@@ -46,8 +46,8 @@ def visualize(true_y, pred_y, odefunc, itr):
     plt.title('Trajectories')
     plt.xlabel('t')
     plt.ylabel('y')
-    plt.plot(t.cpu().numpy(), true_y.cpu().numpy(), label='True Trajectory', color='green')
-    plt.plot(t.cpu().numpy(), pred_y.cpu().numpy(), '--', label='Predicted Trajectory', color='blue')
+    plt.plot(t.cpu().numpy(), true_y.cpu().numpy(), label='True Trajectory', color='blue')
+    plt.plot(t.cpu().numpy(), pred_y.cpu().numpy(), '--', label='Predicted Trajectory', color='red')
     plt.legend()
     plt.xlim(-5, 5)
     plt.ylim(-5, 10)
